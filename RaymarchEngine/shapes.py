@@ -1,32 +1,40 @@
 from __future__ import annotations
 
 from numba import jit
-from numpy import matrix
+import numpy as np
 from . import vectors as vec
 from .tools import shape
 
 
 @shape
-@jit
+@jit(cache=True)
 def example(ray: tuple[int, int]):
     pass
 
 
 @shape
-@jit
+@jit(cache=True)
 def circle(ray: tuple[int, int], circle_size):
     return vec.length(ray) - circle_size
 
 
 @shape
-@jit
+@jit(cache=True, forceobj=True)
 def rectangle(ray: tuple[int, int], a: tuple[int, int], b: tuple[int, int], th: int):
     le = vec.length(vec.sub(b, a))
     d = vec.div(vec.sub(b, a), le)
     q = vec.sub(ray, vec.add(a, b))
     q = q[0]/2, q[1]/2
-    q = tuple((matrix([[d[0], -d[1]], [d[1], d[0]]]) * q).tolist())
-    q = vec.sub(vec.abs_vec(q), (le, th))
+    mx = np.matrix([[d[0], -d[1]], [d[1], d[0]]])
+    q = tuple((mx @ q).tolist()[0])
+    q = vec.sub(vec.abs_vec(q), vec.mul((le, th), 0.5))
+
+    if q[0] > 0:
+        v1 = vec.length(q)
+    else:
+        v1 = 0.0
+    return v1 + min(max(q[0], q[1]), 0)
+
 
 # float sdOrientedBox( in vec2 p, in vec2 a, in vec2 b, float th )
 # {

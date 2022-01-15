@@ -9,12 +9,12 @@ def length(vec: tuple[float, float]):
 
 @jit(cache=True)
 def add(vec1: tuple[float, float], vec2: tuple[float, float]):
-    return vec1[0] + vec2[0], vec1[1] + vec2[2]
+    return vec1[0] + vec2[0], vec1[1] + vec2[1]
 
 
 @jit(cache=True)
 def sub(vec1: tuple[float, float], vec2: tuple[float, float]):
-    return vec1[0] - vec2[0], vec1[1] - vec2[2]
+    return vec1[0] - vec2[0], vec1[1] - vec2[1]
 
 
 @jit(cache=True)
