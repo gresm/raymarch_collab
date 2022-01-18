@@ -2,9 +2,9 @@ import pygame as pg
 
 from game import scene_manager as scenes
 from game import size, game
-from game_scenes import MainMenuScene
+from game_scenes import MainMenuScene, TestScene
 
-scenes.spawn_scene(MainMenuScene)
+scenes.spawn_scene(TestScene)
 
 
 @game.frame
@@ -15,7 +15,7 @@ def frame(window, delta_time):
         else:
             scenes.handle_events(ev)
 
-    scenes.update()
+    scenes.update(delta_time=delta_time)
 
     window.fill((0, 0, 0))
 

@@ -12,6 +12,23 @@ from typing import Type
 import pygame as pg
 
 
+class _SceneInfo:
+    def __init__(self):
+        self.data: dict[str, ...] = {}
+
+    def __getattr__(self, item):
+        return self.get(item)
+
+    def set(self, name: str, value):
+        self.data[name] = value
+
+    def get(self, name: str):
+        return self.data[name]
+
+    def empty(self):
+        self.data = {}
+
+
 class Scene:
     _instances_cnt: int = -1
     instances: dict[int, Scene] = {}
@@ -35,6 +52,10 @@ class Scene:
         Scene._scenes_cnt += 1
         Scene.scenes[Scene._scenes_cnt] = cls
         cls.class_id = cls.current_class_id()
+
+    @property
+    def data(self):
+        return self.manager.data
 
     @classmethod
     def current_instance_id(cls):
@@ -64,20 +85,27 @@ class Scene:
 class SceneManager:
     def __init__(self):
         self.current: Scene | None = None
+        self.data = _SceneInfo()
 
     def draw(self, surface: pg.Surface):
         if self.current is not None:
             self.current.draw(surface)
 
-    def update(self):
+    def update(self, **kwargs):
+        for key in kwargs:
+            self.data.set(key, kwargs[key])
+
         if self.current:
             self.current.update()
 
     def set_active_scene(self, scene_id: int | Scene):
         if isinstance(scene_id, Scene):
+            if self.current is scene_id:
+                return
             self.current = scene_id
         elif scene_id in Scene.instances:
             self.current = Scene.instances[scene_id]
+        self.data.empty()
 
     def spawn_scene(self, scene_id: int | Type[Scene]):
         if isinstance(scene_id, type) and issubclass(scene_id, Scene):

@@ -9,7 +9,7 @@ class _FuncRequestType(Protocol[_K1, _K2]):
     def __call__(self, pos: tuple[_K1, _K2], *args, **kwargs) -> float: ...
 
 
-_DistanceFunc = _FuncRequestType[int, int]
+_DistanceFunc = _FuncRequestType[float, float]
 
 
 class _ShapeCreator:
@@ -26,7 +26,7 @@ class ShapeExecutor:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, x: int, y: int):
+    def __call__(self, x: float, y: float):
         return self.creator.func((x, y), *self.args, *self.kwargs)
 
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from numba import jit
 from . import configs
@@ -12,17 +14,21 @@ class RayMarcher:
     @staticmethod
     @jit(cache=True)
     def generate_color(dist: float) -> tuple[int, int, int]:
-        if dist > 2:
+        if 1 > dist > -1:
+            return 255, 0, 0
+        elif dist <= -1:
+            if dist % 5 < 2.5:
+                return 50, 50, 50
+            return 30, 30, 30
+        elif dist % 5 < 2.5:
             return 255, 255, 255
-        elif dist % 2 == 0:
-            return 0, 0, 0
         else:
-            return 10, 10, 10
+            return 200, 200, 200
 
-    def update(self):
+    def update(self, offset: tuple[float, float] = (0, 0)):
         for x in range(len(self.map)):
             for y in range(len(self.map[x])):
-                self.map[x][y] = self.generate_color(self.distance_func(x, y))
+                self.map[x][y] = self.generate_color(self.distance_func(float(x + offset[0]), float(y + offset[1])))
 
 
 def generate_map():
