@@ -5,60 +5,65 @@ from numba import jit, njit
 import numpy as np
 import math
 
-from . import vectors as vec
 from .tools import shape, ShapeExecutor
+from . import vectors as vec
 
 
 @shape
 @jit(cache=True)
-def example(ray: tuple[float, float]):
+def example(ray):
     pass
 
 
+@jit(cache=True)
+def magnitude(arr: np.ndarray) -> float:
+    return math.sqrt(np.sum(arr * arr))
+
+
 @shape
 @jit(cache=True)
-def circle(ray: tuple[float, float], circle_size):
-    return vec.length(ray) - circle_size
+def circle(ray: np.ndarray, circle_size):
+    return magnitude(ray) - circle_size
 
 
 @shape
 @njit(cache=True)
-def rectangle(ray: tuple[float, float], size: tuple[float, float]) -> float:
+def rectangle(ray: np.ndarray, size: tuple[float, float]) -> float:
     clp = vec.box_border(ray, size)
-    sub = vec.sub(ray, (clp[0], clp[1]))
-    if clp[2]:
-        return vec.length(sub)
-    return -vec.length(sub)
+    sub = ray - clp[0]
+    if clp[1]:
+        return magnitude(sub)
+    return -magnitude(sub)
 
 
 @shape
-def union(ray: tuple[float, float], shape1: ShapeExecutor, shape2: ShapeExecutor, *more: ShapeExecutor):
+def union(ray: np.ndarray, shape1: ShapeExecutor, shape2: ShapeExecutor, *more: ShapeExecutor):
     if more:
         val = None
         for el in more:
             if val is None:
-                val = el(ray[0], ray[1])
+                val = el(ray)
             else:
-                val = min(val, el(ray[0], ray[1]))
+                val = min(val, el(ray))
 
         if val is not None:
-            return min(shape1(ray[0], ray[1]), shape2(ray[0], ray[1]), val)
-    return min(shape1(ray[0], ray[1]), shape2(ray[0], ray[1]))
+            return min(shape1(ray), shape2(ray), val)
+    return min(shape1(ray), shape2(ray))
 
 
 @shape
-def move(ray: tuple[float, float], shape1: ShapeExecutor, offset: tuple[float, float]):
-    return shape1(ray[0] + offset[0], ray[1] + offset[1])
+def move(ray: np.ndarray, shape1: ShapeExecutor, offset: tuple[float, float]):
+    return shape1(ray + offset)
 
 
 @shape
-def reverse(ray: tuple[float, float], shape1: ShapeExecutor):
-    return -shape1(ray[0], ray[1])
+def reverse(ray: np.ndarray, shape1: ShapeExecutor):
+    return -shape1(ray)
 
 
 @shape
-def rotate(ray: tuple[float, float], shape1: ShapeExecutor, angle: float, radian: bool = False):
-    return shape1(*vec.rotate_vect(ray, angle, radian))
+def rotate(ray: np.ndarray, shape1: ShapeExecutor, angle: float, radian: bool = False):
+    return shape1(vec.rotate_vect(ray, angle, radian))
 
 
 # @shape
@@ -83,9 +88,7 @@ def rotate(ray: tuple[float, float], shape1: ShapeExecutor, angle: float, radian
 #     return v1 + min(max(q[0], q[1]), 0)
 #
 #
-# @jit(cache=True)
-# def magnitude(arr: np.ndarray) -> float:
-#     return math.sqrt(np.sum(arr * arr))
+#
 #
 #
 # @shape

@@ -28,7 +28,7 @@ class RayMarcher:
     def update(self, offset: tuple[float, float] = (0, 0)):
         for x in range(len(self.map)):
             for y in range(len(self.map[x])):
-                self.map[x][y] = self.generate_color(self.distance_func(float(x + offset[0]), float(y + offset[1])))
+                self.map[x][y] = self.generate_color(self.distance_func((float(x + offset[0]), float(y + offset[1]))))
 
 
 def generate_map():

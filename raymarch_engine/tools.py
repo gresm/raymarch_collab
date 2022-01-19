@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 from typing import Protocol, TypeVar
+
+import numpy as np
 
 
 _K1 = TypeVar("_K1")
-_K2 = TypeVar("_K2")
 
 
-class _FuncRequestType(Protocol[_K1, _K2]):
-    def __call__(self, pos: tuple[_K1, _K2], *args, **kwargs) -> float: ...
+class _FuncRequestType(Protocol[_K1]):
+    def __call__(self, ray: _K1, *args, **kwargs) -> float: ...
 
 
-_DistanceFunc = _FuncRequestType[float, float]
+_DistanceFunc = _FuncRequestType[np.ndarray]
 
 
 class _ShapeCreator:
@@ -26,8 +29,8 @@ class ShapeExecutor:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, x: float, y: float):
-        return self.creator.func((x, y), *self.args, *self.kwargs)
+    def __call__(self, pos: tuple[float, float] | np.ndarray):
+        return self.creator.func(np.array(pos), *self.args, *self.kwargs)
 
 
 def shape(func: _DistanceFunc):

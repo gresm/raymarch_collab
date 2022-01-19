@@ -64,18 +64,18 @@ def clamp_out(val: float, left: float, right: float):
 
 
 @jit(cache=True)
-def box_border(val: tuple[float, float], box: tuple[float, float]) -> tuple[float, float, bool]:
+def box_border(val: np.ndarray, box: tuple[float, float]) -> tuple[np.ndarray, bool]:
     # return clamp(clamp_out(val[0], -box[0], box[0]), -box[0], box[0]),\
     #        clamp(clamp_out(val[1], -box[1], box[1]), -box[1], box[1])
-    if val[0] < -box[0]:
-        return -box[0], clamp(val[1], -box[1], box[1]), True
-    if val[0] > box[0]:
-        return box[0], clamp(val[1], -box[1], box[1]), True
-    if val[1] < -box[1]:
-        return clamp(val[0], -box[0], box[0]), -box[1], True
-    if val[1] > box[1]:
-        return clamp(val[0], -box[0], box[0]), box[1], True
-    return clamp_out(val[0], -box[0], box[0]), clamp_out(val[1], -box[1], box[1]), False
+    if val[0] <= -box[0]:
+        return np.array((-box[0], clamp(val[1], -box[1], box[1]))), True
+    if val[0] >= box[0]:
+        return np.array((box[0], clamp(val[1], -box[1], box[1]))), True
+    if val[1] <= -box[1]:
+        return np.array((clamp(val[0], -box[0], box[0]), -box[1])), True
+    if val[1] >= box[1]:
+        return np.array((clamp(val[0], -box[0], box[0]), box[1])), True
+    return np.array((clamp_out(val[0], -box[0], box[0]), clamp_out(val[1], -box[1], box[1]))), False
 
 
 @jit(cache=True)
@@ -84,9 +84,8 @@ def get_rotation_matrix(angle: float):
 
 
 @jit(cache=True)
-def rotate_vect(ray: tuple[float, float], angle: float, radian: bool = False):
+def rotate_vect(ray: np.ndarray, angle: float, radian: bool = False):
     th: float = angle
     if not radian:
         np.deg2rad(th)
-    ret = np.dot(get_rotation_matrix(th), np.array(ray))
-    return ret[0], ret[1]
+    return np.dot(get_rotation_matrix(th), np.array(ray))
